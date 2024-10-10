@@ -1,3 +1,4 @@
 *.csv filter=lfs diff=lfs merge=lfs -text
 *.h5 filter=lfs diff=lfs merge=lfs -text
 API/data/X_predictionV1.csv filter=lfs diff=lfs merge=lfs -text
+data/application_train.csv filter=lfs diff=lfs merge=lfs -text
