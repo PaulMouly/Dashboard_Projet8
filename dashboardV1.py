@@ -8,7 +8,12 @@ import matplotlib.pyplot as plt
 st.title("Prédiction de Crédit")
 
 # Saisir SK_ID_CURR
-sk_id_curr = st.text_input("Entrez SK_ID_CURR")
+if 'sk_id_curr' not in st.session_state:
+    st.session_state.sk_id_curr = ""
+
+st.session_state.sk_id_curr = st.text_input("Entrez SK_ID_CURR", value=st.session_state.sk_id_curr)
+
+sk_id_curr = st.session_state.sk_id_curr
 
 # Colonnes les plus importantes (mises à jour)
 colonnes_importantes = [
@@ -57,6 +62,7 @@ descriptions = {
 }
 
 if st.button("Prédire"):
+
     if sk_id_curr:
         response = requests.post(f"https://projet7credit-11e509d90e55.herokuapp.com/predict", data={"SK_ID_CURR": sk_id_curr})
 
@@ -78,7 +84,7 @@ if st.button("Prédire"):
             st.markdown("### Visualisation de la Probabilité")
 
             # Créer une barre de décision
-            bar_length = 700  # Longueur de la barre
+            bar_length = 700  
             threshold = 0.5
             
             # HTML pour afficher la barre colorée
@@ -162,6 +168,7 @@ if st.button("Prédire"):
 
                         # Filtrer les données en fonction du choix de l'utilisateur
                         if option == 'Genre (Homme/Femme)':
+                            st.session_state.sk_id_curr = sk_id_curr
                             genre = st.selectbox('Choisissez le genre:', ['M', 'F'])
                             comparaison_group = client_data[client_data['CODE_GENDER'] == genre]
                         elif option == 'Statut familial':
