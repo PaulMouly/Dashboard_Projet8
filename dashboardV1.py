@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 
 st.title("Prédiction de Crédit")
 
+# Charger les données client
+client_data = pd.read_csv("data/application_train.csv")
+
 # Saisir SK_ID_CURR
 if 'sk_id_curr' not in st.session_state:
     st.session_state.sk_id_curr = ""
@@ -61,6 +64,23 @@ descriptions = {
     'DAYS_LAST_PHONE_CHANGE': 'Nombre de jours depuis le dernier changement de numéro de téléphone mobile.',
 }
 
+# Choix du filtre de comparaison
+option = st.selectbox(
+    'Choisissez un filtre de comparaison:',
+    ('Tous les clients', 'Genre (Homme/Femme)', 'Statut familial', 'Niveau d\'éducation')
+)
+
+# Si l'utilisateur choisit 'Genre (Homme/Femme)', montrer un selectbox pour le genre
+if option == 'Genre (Homme/Femme)':
+    genre = st.selectbox('Choisissez le genre:', ['M', 'F'])
+elif option == 'Statut familial':
+    # Si l'utilisateur choisit 'Statut familial', montrer un selectbox pour le statut
+    statut_famille = st.selectbox('Choisissez le statut familial:', client_data['NAME_FAMILY_STATUS'].unique())
+elif option == 'Niveau d\'éducation':
+    # Si l'utilisateur choisit 'Niveau d'éducation', montrer un selectbox pour le niveau
+    niveau_education = st.selectbox('Choisissez le niveau d\'éducation:', client_data['NAME_EDUCATION_TYPE'].unique())
+
+
 if st.button("Prédire"):
 
     if sk_id_curr:
@@ -74,6 +94,17 @@ if st.button("Prédire"):
             sk_id = soup.find('p').text.split(": ")[1]  # Extraction du SK_ID_CURR
             prediction = soup.find_all('p')[1].text.split(": ")[1]  # Extraction de la prédiction
             probability = float(soup.find_all('p')[2].text.split(": ")[1])  # Extraction de la probabilité
+
+            # Extraire l'importance des caractéristiques
+            importances = {}
+            importance_elements = soup.find_all('li')  
+    
+            for element in importance_elements:
+                parts = element.text.split(": ")
+                if len(parts) == 2:
+                    feature_name = parts[0].strip()
+                    feature_importance = float(parts[1].strip())
+                    importances[feature_name] = feature_importance
 
             # Affichage dans Streamlit
             st.write(f"**SK_ID_CURR**: {sk_id}")
@@ -158,24 +189,29 @@ if st.button("Prédire"):
                         for column, desc in descriptions.items():
                             st.markdown(f"**{column}**: {desc}")
 
-                        # GRAPHIQUE
+                        # Ajouter l'image de l'importance globale
+                        st.subheader("Importance des caractéristiques globales")
+                        st.image("images/feature_importances_globales.png", caption="Top 20 des caractéristiques les plus importantes (globale)", use_column_width=True)
 
-                        # Ajouter un sélecteur pour filtrer les clients par genre ou autre variable
-                        option = st.selectbox(
-                            'Choisissez un filtre de comparaison:',
-                            ('Tous les clients', 'Genre (Homme/Femme)', 'Statut familial', 'Niveau d\'éducation')
-                        )
+                        # Afficher l'importance des caractéristiques
+                        st.subheader("Importance des caractéristiques locales")
+                        importance_df = pd.DataFrame(list(importances.items()), columns=['Feature', 'Importance'])
+                        importance_df = importance_df.sort_values(by='Importance', ascending=False)
+
+                        # Graphique de l'importance des caractéristiques
+                        fig, ax = plt.subplots(figsize=(10, 6))
+                        sns.barplot(data=importance_df.head(10), x='Importance', y='Feature', ax=ax, palette='viridis')
+                        ax.set_title("Top 10 des caractéristiques les plus importantes (locale)")
+                        st.pyplot(fig)
+
+                        # GRAPHIQUE
 
                         # Filtrer les données en fonction du choix de l'utilisateur
                         if option == 'Genre (Homme/Femme)':
-                            st.session_state.sk_id_curr = sk_id_curr
-                            genre = st.selectbox('Choisissez le genre:', ['M', 'F'])
                             comparaison_group = client_data[client_data['CODE_GENDER'] == genre]
                         elif option == 'Statut familial':
-                            statut_famille = st.selectbox('Choisissez le statut familial:', client_data['NAME_FAMILY_STATUS'].unique())
                             comparaison_group = client_data[client_data['NAME_FAMILY_STATUS'] == statut_famille]
                         elif option == 'Niveau d\'éducation':
-                            niveau_education = st.selectbox('Choisissez le niveau d\'éducation:', client_data['NAME_EDUCATION_TYPE'].unique())
                             comparaison_group = client_data[client_data['NAME_EDUCATION_TYPE'] == niveau_education]
                         else:
                             comparaison_group = client_data
@@ -227,6 +263,6 @@ if st.button("Prédire"):
                 st.error(f"Une erreur s'est produite lors du chargement des données : {str(e)}")
 
         else:
-            st.error(f"Erreur: {response.json()['error']}")
+            st.error("Erreur: Ce numéro de client n'existe pas ou est invalide.")
     else:
         st.warning("Veuillez entrer un SK_ID_CURR.")
