@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 st.title("Prédiction de Crédit")
 
-# Charger les données client
+# Chargement des données client
 client_data = pd.read_csv("data/application_train.csv")
 
 # Saisir SK_ID_CURR
@@ -114,7 +114,7 @@ if st.button("Prédire"):
             # Visualisation de la probabilité avec une barre colorée
             st.markdown("### Visualisation de la Probabilité")
 
-            # Créer une barre de décision
+            # Création d'une barre de décision
             bar_length = 700  
             threshold = 0.5
             
@@ -143,7 +143,7 @@ if st.button("Prédire"):
             else:
                 st.success("Cela signifie que le crédit est susceptible d'être accordé.")
 
-            # Afficher un texte explicatif sur le crédit
+            # Affichage du texte explicatif sur le crédit
             st.markdown(""" 
             ### Explication sur le crédit
             La probabilité de défaut de crédit est une estimation de la possibilité qu'un emprunteur ne rembourse pas son prêt. 
@@ -151,7 +151,7 @@ if st.button("Prédire"):
             - **Probabilité élevée**: Cela indique que l'emprunteur est à risque de ne pas rembourser le crédit, ce qui pourrait entraîner un refus de la demande.
             """)
 
-            # Charger les données et afficher les caractéristiques
+            # Chargement des données et affichage des caractéristiques
             try:
                 client_data = pd.read_csv("data/application_train.csv") 
 
@@ -159,16 +159,16 @@ if st.button("Prédire"):
                     client_info = client_data[client_data['SK_ID_CURR'] == int(sk_id_curr)]
 
                     if not client_info.empty:
-                        # Afficher uniquement les colonnes importantes
+                        # Affichage uniquement les colonnes importantes
                         st.write("Données du client pour SK_ID_CURR : **{}**".format(sk_id_curr))
 
-                        # Créer un DataFrame avec les colonnes importantes
+                        # Création d'un DataFrame avec les colonnes importantes
                         df = client_info[colonnes_importantes].copy()
                         
-                        # Appliquer un style au tableau
+                        # Appliquation d'un style au tableau
                         styled_df = df.style.background_gradient(cmap='viridis').set_table_attributes('style="width: 80%; margin: auto;"')
 
-                        # Définir des styles pour le tableau
+                        # Définir les styles pour le tableau
                         styled_df.set_table_styles(
                             [{'selector': 'th',
                               'props': [('background-color', '#f2f2f2'), ('color', 'black'), ('border', '1px solid #dddddd')]},
@@ -176,7 +176,7 @@ if st.button("Prédire"):
                               'props': [('border', '1px solid #dddddd'), ('padding', '8px'), ('text-align', 'center')]}]
                         )
 
-                        # Ajouter des couleurs aux lignes alternées
+                        # On ajoute des couleurs aux lignes alternées
                         styled_df.set_table_styles(
                             [{'selector': 'tr:nth-child(even)',
                               'props': [('background-color', '#f9f9f9')]}]
@@ -184,16 +184,16 @@ if st.button("Prédire"):
                         
                         st.dataframe(styled_df)
 
-                        # Ajouter la section des descriptions des colonnes
+                        # On ajoute la section des descriptions des colonnes
                         st.subheader("Descriptions des colonnes")
                         for column, desc in descriptions.items():
                             st.markdown(f"**{column}**: {desc}")
 
-                        # Ajouter l'image de l'importance globale
+                        # On ajoute l'image de l'importance globale
                         st.subheader("Importance des caractéristiques globales")
                         st.image("images/feature_importances_globales.png", caption="Top 20 des caractéristiques les plus importantes (globale)", use_column_width=True)
 
-                        # Afficher l'importance des caractéristiques
+                        # Affichage de l'importance des caractéristiques
                         st.subheader("Importance des caractéristiques locales")
                         importance_df = pd.DataFrame(list(importances.items()), columns=['Feature', 'Importance'])
                         importance_df = importance_df.sort_values(by='Importance', ascending=False)
@@ -204,9 +204,9 @@ if st.button("Prédire"):
                         ax.set_title("Top 10 des caractéristiques les plus importantes (locale)")
                         st.pyplot(fig)
 
-                        # GRAPHIQUE
+                        # PARTIE GRAPHIQUE
 
-                        # Filtrer les données en fonction du choix de l'utilisateur
+                        # Filtration des données en fonction du choix de l'utilisateur
                         if option == 'Genre (Homme/Femme)':
                             comparaison_group = client_data[client_data['CODE_GENDER'] == genre]
                         elif option == 'Statut familial':
@@ -219,15 +219,15 @@ if st.button("Prédire"):
                         # Colonnes numériques à comparer (par exemple EXT_SOURCE, revenu, âge, etc.)
                         variables_numeriques = ['AMT_INCOME_TOTAL', 'DAYS_BIRTH', 'AMT_CREDIT', 'EXT_SOURCE_1', 'EXT_SOURCE_2', 'EXT_SOURCE_3']
 
-                        # Afficher un graphique boxplot pour comparer les distributions de chaque variable
+                        # Affichage d'un graphique boxplot pour comparer les distributions de chaque variable
                         for variable in variables_numeriques:
                             st.markdown(f"### Comparaison pour la variable: {variable}")
     
-                            # Créer le boxplot pour comparer la distribution
+                            # Création du boxplot pour comparer la distribution
                             fig, ax = plt.subplots(figsize=(10, 5))
                             sns.boxplot(data=comparaison_group, x=comparaison_group[variable], ax=ax)
     
-                            # Ajouter la valeur du client sur le graphique
+                            # On ajoute la valeur du client sur le graphique
                             client_val = client_info[variable].values[0]
                             plt.axvline(client_val, color='red', linestyle='--', label=f'Client {sk_id_curr}')
     
@@ -236,15 +236,15 @@ if st.button("Prédire"):
                             plt.legend()
                             st.pyplot(fig)
 
-                        # Afficher aussi des histogrammes
+                        # Affichage aussi des histogrammes
                         for variable in variables_numeriques:
                             st.markdown(f"### Histogramme pour la variable: {variable}")
     
-                            # Créer l'histogramme pour comparer la distribution
+                            # Création de l'histogramme pour comparer la distribution
                             fig, ax = plt.subplots(figsize=(10, 5))
                             sns.histplot(data=comparaison_group, x=comparaison_group[variable], kde=True, ax=ax, color="blue", bins=20)
     
-                            # Ajouter la valeur du client sur le graphique
+                            # J'y ajoute la valeur du client sur le graphique
                             client_val = client_info[variable].values[0]
                             plt.axvline(client_val, color='red', linestyle='--', label=f'Client {sk_id_curr}')
     
