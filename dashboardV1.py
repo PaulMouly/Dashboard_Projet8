@@ -253,6 +253,28 @@ if st.button("Prédire"):
                             plt.legend()
                             st.pyplot(fig)
 
+                        st.subheader("Graphiques Bivariés pour Analyse Croisée")
+                        paires_variables = [
+                            ('AMT_INCOME_TOTAL', 'AMT_CREDIT'),
+                            ('DAYS_BIRTH', 'AMT_CREDIT'),
+                            ('CNT_CHILDREN', 'AMT_INCOME_TOTAL')
+                        ]
+
+
+                        for var_x, var_y in paires_variables:
+                            st.markdown(f"### Comparaison Bivariée : {var_x} vs {var_y}")
+                            fig, ax = plt.subplots(figsize=(8, 6))
+                            sns.scatterplot(data=comparaison_group, x=var_x, y=var_y, ax=ax, alpha=0.3, color="blue")
+                            client_x = client_info[var_x].values[0]
+                            client_y = client_info[var_y].values[0]
+                            plt.scatter(client_x, client_y, color='red', s=100, label=f'Client {sk_id_curr}', edgecolor='black')
+                            plt.xlabel(var_x)
+                            plt.ylabel(var_y)
+                            plt.title(f'Comparaison Bivariée entre {var_x} et {var_y}')
+                            plt.legend()
+                            st.pyplot(fig)
+
+
                     else:
                         st.warning("Aucune donnée trouvée pour l'identifiant SK_ID_CURR donné.")
                 else:
